@@ -1,0 +1,185 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class HurtEnemy : MonoBehaviour {
+
+    public int damageToGive;
+    public int flame = 0;
+    public int iced = 0;
+    private int currentDamage;
+    public GameObject damageBurst;
+    public Transform hitPoint;
+    public GameObject damageNumber;
+
+    public bool frozen;
+
+    public int burnDamage;
+    public float burnTimer;
+    private float burnTimerCounter;
+    public float burnRepeat;
+    private PlayerController thePC;
+    private Animator anim;
+    private IcePhantomController theIPC;
+    private LavaMonsterController theLMC;
+
+    private PlayerStats thePS;
+    private SlimeController theSC;
+
+    private float time = 5;
+    private float timeCounter;
+
+    public GameObject Name;
+
+    public float crit;
+
+    void Start () {
+        thePS = FindObjectOfType<PlayerStats>();
+        thePC = FindObjectOfType<PlayerController>();
+        theIPC = FindObjectOfType<IcePhantomController>();
+        theLMC = FindObjectOfType<LavaMonsterController>();
+        theSC = FindObjectOfType<SlimeController>();
+        anim = GetComponent<Animator>();
+        frozen = false;
+
+    }
+	
+	// Update is called once per frame
+	void Update () {
+
+
+    }
+
+    public void OnTriggerEnter2D(Collider2D other)
+    {
+        if(other.gameObject.tag == "Enemy")
+        {
+            //Destroy(other.gameObject);
+
+            currentDamage = damageToGive + thePS.currentAttack;
+
+            if (thePC.sword1)
+            {
+                currentDamage = damageToGive + damageToGive * 1/2 + thePS.currentAttack;
+            }
+
+            if (thePC.wind1)
+            {
+                currentDamage = damageToGive + thePS.currentAttack/4;
+            }
+
+            if (thePC.earth1)
+            {
+                currentDamage = damageToGive + thePS.currentAttack/3;
+            }
+
+            Name = other.gameObject;
+
+             if (thePC.ice1)
+            {
+                frozen = true;
+                Name.gameObject.GetComponent<SlimeController>().OnFreeze();
+            }
+
+             if(thePC.fire1)
+            {
+                Name.gameObject.GetComponent<SlimeController>().OnBurn();
+                currentDamage = damageToGive + thePS.currentAttack;
+            }
+            other.gameObject.GetComponent<EnemyHealthManager>().HurtEnemy(currentDamage);
+            Instantiate(damageBurst, hitPoint.position, hitPoint.rotation);
+            var clone = (GameObject) Instantiate(damageNumber, hitPoint.position, Quaternion.Euler(Vector3.zero));
+            clone.GetComponent<FloatingNumbers>().damageNumber = currentDamage;
+
+        }
+
+        if (other.gameObject.tag == "IceEnemy")
+        {
+            //Destroy(other.gameObject);
+
+            currentDamage = damageToGive + thePS.currentAttack + flame;
+            /*if(thePC.fire == true && theIPC.iceType == true && other.gameObject.tag == "Enemy")
+             {
+                 currentDamage = damageToGive + thePS.currentAttack + flame;
+             }*/
+             if(thePC.wind1)
+            {
+                currentDamage = 0;
+            }
+
+            if (thePC.ice1)
+            {
+                currentDamage = damageToGive + thePS.currentAttack / 4;
+            }
+
+            if (thePC.earth1)
+            {
+                currentDamage = damageToGive + thePS.currentAttack / 2;
+            }
+
+            if (thePC.fire1)
+            {
+                currentDamage = damageToGive + thePS.currentAttack + thePS.currentAttack * 1/2;
+            }
+
+            other.gameObject.GetComponent<EnemyHealthManager>().HurtEnemy(currentDamage);
+            Instantiate(damageBurst, hitPoint.position, hitPoint.rotation);
+            var clone = (GameObject)Instantiate(damageNumber, hitPoint.position, Quaternion.Euler(Vector3.zero));
+            clone.GetComponent<FloatingNumbers>().damageNumber = currentDamage;
+        }
+
+        if (other.gameObject.tag == "FireEnemy")
+        {
+            //Destroy(other.gameObject);
+
+            currentDamage = damageToGive + thePS.currentAttack + iced;
+
+            if (thePC.fire1)
+            {
+                currentDamage = damageToGive + thePS.currentAttack / 4;
+            }
+
+            if (thePC.ice1)
+            {
+                currentDamage = damageToGive + thePS.currentAttack + thePS.currentAttack * 1/2;
+            }
+
+            other.gameObject.GetComponent<EnemyHealthManager>().HurtEnemy(currentDamage);
+            Instantiate(damageBurst, hitPoint.position, hitPoint.rotation);
+            var clone = (GameObject)Instantiate(damageNumber, hitPoint.position, Quaternion.Euler(Vector3.zero));
+            clone.GetComponent<FloatingNumbers>().damageNumber = currentDamage;
+        }
+
+        if (other.gameObject.tag == "PhantomEnemy")
+        {
+            //Destroy(other.gameObject);
+
+            currentDamage = damageToGive + thePS.currentAttack;
+
+            if (thePC.ice1)
+            {
+                currentDamage = damageToGive + thePS.currentAttack / 2;
+            }
+
+            if (thePC.fire1)
+            {
+                currentDamage = damageToGive + thePS.currentAttack / 2;
+            }
+
+            if (thePC.earth1)
+            {
+                currentDamage = damageToGive + thePS.currentAttack / 2;
+            }
+
+            if (thePC.ice1)
+            {
+                currentDamage = damageToGive + thePS.currentAttack / 2;
+            }
+
+            other.gameObject.GetComponent<EnemyHealthManager>().HurtEnemy(currentDamage);
+            Instantiate(damageBurst, hitPoint.position, hitPoint.rotation);
+            var clone = (GameObject)Instantiate(damageNumber, hitPoint.position, Quaternion.Euler(Vector3.zero));
+            clone.GetComponent<FloatingNumbers>().damageNumber = currentDamage;
+        }
+    }
+}
