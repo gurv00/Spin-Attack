@@ -1,0 +1,324 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerController : MonoBehaviour {
+
+    public float moveSpeed;
+    private float currentMoveSpeed;
+    public float diagonalMoveModifier;
+
+    private Animator anim;
+    private Rigidbody2D myRigidbody;
+
+
+    private bool playerMoving;
+    private Vector2 lastMove;
+    private Vector2 moveInput;
+
+    private static bool playerExists;
+    private bool attacking;
+    public float attackTime;
+    private float attackTimeCounter;
+
+    public string startPoint;
+
+    public float spinAttackTime;
+    private float spinAttackTimeCounter;
+
+    private bool hookAttacking;
+    public float hookAttackTime;
+    private float hookAttackTimeCounter;
+
+    private bool freezeAttacking;
+    public float freezeAttackTime;
+    private float freezeAttackTimeCounter;
+
+    private bool fireAttacking;
+    public float fireAttackTime;
+    private float fireAttackTimeCounter;
+
+    private bool earthAttacking;
+    public float earthAttackTime;
+    private float earthAttackTimeCounter;
+
+    private bool airAttacking;
+    public float airAttackTime;
+    private float airAttackTimeCounter;
+    
+    public bool burn;
+    public bool freeze;
+    public bool canMove;
+
+    private float freezingTime = 5;
+    private float freezingTimeCounter;
+    private HurtEnemy theHE;
+    private SFXManager sfxMan;
+
+    public bool fire1;
+    public bool ice1;
+    public bool earth1;
+    public bool wind1;
+    public bool sword1;
+
+    void Start () {
+
+        anim = GetComponent<Animator>();
+        myRigidbody = GetComponent<Rigidbody2D>();
+        sfxMan = FindObjectOfType<SFXManager>();
+        theHE = FindObjectOfType<HurtEnemy>();
+
+        if (!playerExists)
+        {
+            playerExists = true;
+            DontDestroyOnLoad(transform.gameObject);
+        } else {
+            Destroy(gameObject);
+        }
+
+        canMove = true;
+
+        lastMove = new Vector2(0, -1);
+        fire = false;
+        freeze = false;
+        freezingTimeCounter = freezingTime;
+    }
+	
+	// Update is called once per frame
+	void Update () {
+
+        playerMoving = false;
+
+        if(!canMove)
+        {
+            myRigidbody.velocity = Vector2.zero;
+            return;
+        }
+
+        if (!attacking && !hookAttacking && !freezeAttacking && !fireAttacking && !earthAttacking && !airAttacking)
+        {
+
+            if (Input.GetAxisRaw("Horizontal") > 0.5f || Input.GetAxisRaw("Horizontal") < -0.5f)
+            {
+                
+                myRigidbody.velocity = new Vector2(Input.GetAxisRaw("Horizontal") * currentMoveSpeed, myRigidbody.velocity.y);
+                playerMoving = true;
+                lastMove = new Vector2(Input.GetAxisRaw("Horizontal"), 0f);
+            }
+
+            if (Input.GetAxisRaw("Vertical") > 0.5f || Input.GetAxisRaw("Vertical") < -0.5f)
+            {
+                
+                myRigidbody.velocity = new Vector2(myRigidbody.velocity.x, Input.GetAxisRaw("Vertical") * currentMoveSpeed);
+                playerMoving = true;
+                lastMove = new Vector2(0f, Input.GetAxisRaw("Vertical"));
+            }
+
+            if (Input.GetAxisRaw("Horizontal") < 0.5f && Input.GetAxisRaw("Horizontal") > -0.5f)
+            {
+                myRigidbody.velocity = new Vector2(0f, myRigidbody.velocity.y);
+            }
+
+            if (Input.GetAxisRaw("Vertical") < 0.5f && Input.GetAxisRaw("Vertical") > -0.5f)
+            {
+                myRigidbody.velocity = new Vector2(myRigidbody.velocity.x, 0f);
+            }
+
+             
+                //Collects the key input from the player
+                if (Input.GetKey(KeyCode.J))
+                {
+                    
+                    //attackTime can be set in unity or in script, used to determine how long the Counter should run
+                    spinAttackTimeCounter = spinAttackTime;
+                    
+                    attackTimeCounter = attackTime;
+                    attacking = true;
+
+                    myRigidbody.velocity = Vector2.zero;
+                    //Tells the animator in Unity to execut the attack animation
+                    anim.SetBool("Attack", true);
+
+                    sword1 = true;
+                    sfxMan.playerSwings.Play();
+                }
+
+                if (Input.GetKeyDown(KeyCode.K))
+                {
+                    spinAttackTimeCounter = spinAttackTime;
+                    anim.SetBool("SpinAttack", true);
+                    sfxMan.playerSwings.Play();
+                }
+
+                if (Input.GetKeyDown(KeyCode.L))
+                {
+                    hookAttackTimeCounter = hookAttackTime;
+                    hookAttacking = true;
+                    myRigidbody.velocity = Vector2.zero;
+                    anim.SetBool("HookAttack", true);
+                    sfxMan.chain.Play();
+                }
+
+                if (Input.GetKeyDown(KeyCode.O))
+                {
+                    ice1 = true;
+                    freeze = true;
+                    freezingTimeCounter = freezingTime;
+                    freezeAttackTimeCounter = freezeAttackTime;
+                    freezeAttacking = true;
+                    myRigidbody.velocity = Vector2.zero;
+                    anim.SetBool("FreezeAttack", true);
+                    sfxMan.playerFreeze.Play();
+
+                }
+
+                if (Input.GetKey(KeyCode.I))
+                {
+                    fire1 = true;
+                    fireAttackTimeCounter = fireAttackTime;
+                    fireAttacking = true;
+                    myRigidbody.velocity = Vector2.zero;
+                    anim.SetBool("FireAttack", true);
+                    sfxMan.playerFire.Play();
+                    burnRandom = Random.Range(0, 10);
+                    theHE.burnRepeat = 3;
+                    fire = true;
+
+                }
+
+                if (Input.GetKeyDown(KeyCode.U))
+                {
+                    earth1 = true;
+                    earthAttackTimeCounter = earthAttackTime;
+                    earthAttacking = true;
+                    myRigidbody.velocity = Vector2.zero;
+                    anim.SetBool("EarthAttack", true);
+                    // sfxMan.playerFreeze.Play();
+                }
+
+                if (Input.GetKeyDown(KeyCode.H))
+                {
+                    wind1 = true;
+                    airAttackTimeCounter = airAttackTime;
+                    airAttacking = true;
+                    myRigidbody.velocity = Vector2.zero;
+                    anim.SetBool("AirAttack", true);
+                    sfxMan.playerAir.Play();
+                }
+
+
+            if (Mathf.Abs (Input.GetAxisRaw("Horizontal")) > 0.5f && Mathf.Abs(Input.GetAxisRaw("Vertical")) > 0.5f)
+            {
+                currentMoveSpeed = moveSpeed * diagonalMoveModifier;
+            } else
+            {
+                currentMoveSpeed = moveSpeed;
+            }
+
+        }
+
+        //checks if the attackTime is greater than 0, which was set by the attackTime variable
+        if (attackTimeCounter > 0)
+        {
+            //Decrements the time that was set by the spinAttackTime variable
+            attackTimeCounter -= Time.deltaTime;
+        }
+
+        //checks if the attackTime is less than 0 which would signify that the attack should stop playing
+        if (attackTimeCounter <= 0)
+        {
+            attacking = false;
+            //tells the animator to stop playing the attack animation
+            anim.SetBool("Attack", false);
+            sword1 = false;
+        }
+
+        if (spinAttackTimeCounter > 0)
+        {
+            spinAttackTimeCounter -= Time.deltaTime;
+        }
+
+        if (spinAttackTimeCounter <= 0)
+        {
+            anim.SetBool("SpinAttack", false);
+        }
+
+        if (hookAttackTimeCounter > 0)
+        {
+            hookAttackTimeCounter -= Time.deltaTime;
+        }
+
+        if (hookAttackTimeCounter <= 0)
+        {
+            hookAttacking = false;
+            anim.SetBool("HookAttack", false);
+        }
+
+        if (freezeAttackTimeCounter > 0)
+        {
+            freezeAttackTimeCounter -= Time.deltaTime;
+        }
+
+        if (freezeAttackTimeCounter <= 0)
+        {
+            
+            freezeAttacking = false;
+            anim.SetBool("FreezeAttack", false);
+            ice1 = false;
+
+        }
+
+        if (fireAttackTimeCounter > 0)
+        {
+            fireAttackTimeCounter -= Time.deltaTime;
+        }
+
+        if (fireAttackTimeCounter <= 0)
+        {
+            fireAttacking = false;
+            anim.SetBool("FireAttack", false);
+            fire1 = false;
+        }
+
+        if (earthAttackTimeCounter > 0)
+        {
+            earthAttackTimeCounter -= Time.deltaTime;
+            
+        }
+
+        if (earthAttackTimeCounter <= 0)
+        {
+            earthAttacking = false;
+            anim.SetBool("EarthAttack", false);
+            earth1 = false;
+        }
+
+        if (airAttackTimeCounter > 0)
+        {
+            airAttackTimeCounter -= Time.deltaTime;
+        }
+
+        if (airAttackTimeCounter <= 0)
+        {
+            airAttacking = false;
+            anim.SetBool("AirAttack", false);
+            wind1 = false;
+        }
+
+        if (freezingTimeCounter > 0)
+        {
+            freezingTimeCounter -= Time.deltaTime;
+        }
+
+        if(freezingTimeCounter <= 0)
+        {
+            freeze = false;
+        }
+
+        anim.SetFloat("MoveX", Input.GetAxisRaw("Horizontal"));
+        anim.SetFloat("MoveY", Input.GetAxisRaw("Vertical"));
+        anim.SetBool("PlayerMoving", playerMoving);
+        anim.SetFloat("LastMoveX", lastMove.x);
+        anim.SetFloat("LastMoveY", lastMove.y);
+    }  
+}
